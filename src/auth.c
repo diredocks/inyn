@@ -42,6 +42,12 @@ static void SendResponseIdentity(pcap_t *adhandle,
 			const uint8_t ethhdr[],
 			const uint8_t ip[4],
 			const char    username[]);
+
+static void SendFirstResponseIdentity(pcap_t *adhandle,
+			const uint8_t request[],
+			const uint8_t ethhdr[],
+			const uint8_t ip[4],
+			const char    username[]);
 static void SendResponseMD5(pcap_t *adhandle,
 		const uint8_t request[],
 		const uint8_t ethhdr[],
@@ -123,6 +129,7 @@ int Authentication(const char *UserName, const char *Password, const char *Devic
 
 		/* 等待认证服务器的回应 */
 		bool serverIsFound = false;
+		bool isFirstResponse = true;
 		while (!serverIsFound)
 		{
 			retcode = pcap_next_ex(adhandle, &header, &captured);
@@ -162,7 +169,16 @@ int Authentication(const char *UserName, const char *Password, const char *Devic
 		{	// 通常情况会收到包Request Identity，应回答Response Identity
 			DPRINTF("[%d] Server: Request Identity!\n", captured[19]);
 			GetIpFromDevice(ip, DeviceName);
-			SendResponseIdentity(adhandle, captured, ethhdr, ip, UserName);
+			if (isFirstResponse)
+			{
+				SendFirstResponseIdentity(adhandle, captured, ethhdr, ip, UserName);
+				DPRINTF("[%d] Client: Response First Identity.\n", (EAP_ID)captured[19]);
+				isFirstResponse = false;
+			}
+			else
+			{
+				SendResponseIdentity(adhandle, captured, ethhdr, ip, UserName);
+			}
 			DPRINTF("[%d] Client: Response Identity.\n", (EAP_ID)captured[19]);
 		}
 		else if ((EAP_Type)captured[22] == AVAILABLE)
@@ -259,7 +275,7 @@ int Authentication(const char *UserName, const char *Password, const char *Devic
 			{
 				DPRINTF("[%d] Server: Success.\n", captured[19]);
 				// 刷新IP地址
-				system("njit-RefreshIP");
+				//system("njit-RefreshIP");
 			}
 			else
 			{
@@ -318,8 +334,8 @@ void SendStartPkt(pcap_t *handle, const uint8_t localmac[])
 	// 1、广播发送Strat包
 	pcap_sendpacket(handle, packet, sizeof(packet));
 	// 2、多播发送Strat包
-	memcpy(packet, MultcastAddr, 6);
-	pcap_sendpacket(handle, packet, sizeof(packet));
+	//memcpy(packet, MultcastAddr, 6);
+	//pcap_sendpacket(handle, packet, sizeof(packet));
 }
 
 
@@ -414,6 +430,63 @@ void SendResponseIdentity(pcap_t *adhandle, const uint8_t request[], const uint8
 				response[i++] = 0x04;	  //
 				memcpy(response+i, ip, 4);//
 				i += 4;			  //
+				response[i++] = 0x06;		  // 携带版本号
+				response[i++] = 0x07;		  //
+				FillBase64Area((char*)response+i);//
+				i += 28;			  //
+				response[i++] = ' '; // 两个空格符
+				response[i++] = ' '; //
+				usernamelen = strlen(username); //末尾添加用户名
+				memcpy(response+i, username, usernamelen);
+				i += usernamelen;
+				assert(i <= sizeof(response));
+			// }
+		// }
+	// }
+	
+	// 补填前面留空的两处Length
+	eaplen = htons(i-18);
+	memcpy(response+16, &eaplen, sizeof(eaplen));
+	memcpy(response+20, &eaplen, sizeof(eaplen));
+
+	// 发送
+	pcap_sendpacket(adhandle, response, i);
+	return;
+}
+
+void SendFirstResponseIdentity(pcap_t *adhandle, const uint8_t request[], const uint8_t ethhdr[], const uint8_t ip[4], const char username[])
+{
+	uint8_t	response[128];
+	size_t i;
+	uint16_t eaplen;
+	int usernamelen;
+
+	assert((EAP_Code)request[18] == REQUEST);
+	assert((EAP_Type)request[22] == IDENTITY
+	     ||(EAP_Type)request[22] == AVAILABLE); // 兼容中南财经政法大学情况
+
+	// Fill Ethernet header
+	memcpy(response, ethhdr, 14);
+
+	// 802,1X Authentication
+	// {
+		response[14] = 0x1;	// 802.1X Version 1
+		response[15] = 0x0;	// Type=0 (EAP Packet)
+		//response[16~17]留空	// Length
+
+		// Extensible Authentication Protocol
+		// {
+			response[18] = (EAP_Code) RESPONSE;	// Code
+			response[19] = request[19];		// ID
+			//response[20~21]留空			// Length
+			response[22] = (EAP_Type) IDENTITY;	// Type
+			// Type-Data
+			// {
+				i = 23;
+				//response[i++] = 0x15;	  // 上传IP地址
+				//response[i++] = 0x04;	  //
+				//memcpy(response+i, ip, 4);//
+				//i += 4;			  //
 				response[i++] = 0x06;		  // 携带版本号
 				response[i++] = 0x07;		  //
 				FillBase64Area((char*)response+i);//
@@ -630,4 +703,3 @@ void FillBase64Area(char area[])
 	area[26] = Tbl[               ((c2&0x0f)<<2)];
 	area[27] = '=';
 }
-
