@@ -14,11 +14,11 @@
 #define LOCALEDIR "/usr/local/share/locale"
 #endif
 
-#include "njit8021xclient.h"
+#include "8021xclient.h"
 
 const struct GlobalConfig g_config = {
-	.package_name    = PACKAGE_NAME,
-	.package_version = PACKAGE_VERSION,
-	.locale_dir      = LOCALEDIR,
+	/*.package_name    = */ PACKAGE_NAME,
+	/*.package_version = */ PACKAGE_VERSION,
+	/*.locale_dir      = */ LOCALEDIR,
 };
 

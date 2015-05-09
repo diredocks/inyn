@@ -7,4 +7,4 @@ extern const struct GlobalConfig {
 	const char *locale_dir;
 } g_config;
 
-#endif//NJIT8021XCLIENT_H
+#endif//nJIT8021XCLIENT_H
