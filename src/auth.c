@@ -140,7 +140,8 @@ int Authentication(const char *UserName, const char *Password, const char *Devic
 				serverIsFound = true;
 			else
 			{	// 延时后重试
-				sleep(1); DPRINTF(".");
+				sleep(1);
+				//DPRINTF(".");
 				SendStartPkt(adhandle, MAC);
 				// NOTE: 这里没有检查网线是否接触不良或已被拔下
 			}
@@ -197,7 +198,7 @@ int Authentication(const char *UserName, const char *Password, const char *Devic
 			// 调用pcap_next_ex()函数捕获数据包
 			while (pcap_next_ex(adhandle, &header, &captured) != 1)
 			{
-				DPRINTF("."); // 若捕获失败，则等1秒后重试
+				//DPRINTF("."); // 若捕获失败，则等1秒后重试
 				sleep(1);     // 直到成功捕获到一个数据包后再跳出
 				// NOTE: 这里没有检查网线是否已被拔下或插口接触不良
 			}
@@ -280,6 +281,7 @@ int Authentication(const char *UserName, const char *Password, const char *Devic
 			}
 			else if ((EAP_Code)captured[18] == 0x0A)
 			{
+				DPRINTF("[%d] Server: (H3C data)\n", captured[19]);
 				if (captured[26] == 0x35)
 				{
 					for (i = 0; i < 32; i++)
@@ -291,8 +293,7 @@ int Authentication(const char *UserName, const char *Password, const char *Devic
 			}
 			else
 			{
-				DPRINTF("[%d] Server: (H3C data)\n", captured[19]);
-				// TODO: 这里没有处理华为自定义数据包 
+				DPRINTF("[%d] Server: (unknown data)\n", captured[19]);
 			}
 		}
 	}

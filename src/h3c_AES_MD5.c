@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <openssl/md5.h>
+#include <arpa/inet.h>
 #include "aes.h"
 #include "h3c_dict.h"
 #include "h3c_AES_MD5.h"
@@ -52,7 +54,7 @@ int h3c_AES_MD5_decryption(unsigned char *decrypt_data, unsigned char *encrypt_d
 	AES128_CBC_decrypt_buffer(tmp0, encrypt_data, 32, key, iv1);
 	memcpy(decrypt_data, tmp0, 16);
 	length_1 = *(tmp0 + 5);
-	get_sig(*(unsigned long *)tmp0, *(tmp0 + 4), length_1, sig);
+	get_sig(*(uint32_t *)tmp0, *(tmp0 + 4), length_1, sig);
 	MD5(sig, length_1, tmp2);
 
 	AES128_CBC_decrypt_buffer(tmp3, tmp0+16, 16, tmp2, iv2);
@@ -60,7 +62,7 @@ int h3c_AES_MD5_decryption(unsigned char *decrypt_data, unsigned char *encrypt_d
 	memcpy(decrypt_data + 16, tmp3, 16);
 
 	length_2 = *(tmp3 + 15);
-	get_sig(*(unsigned long *)(tmp3 + 10), *(tmp3 + 14), length_2, sig + length_1);
+	get_sig(*(uint32_t *)(tmp3 + 10), *(tmp3 + 14), length_2, sig + length_1);
 	if (length_1 + length_2>32)
 	{
 		memcpy(decrypt_data, sig, 32);
@@ -76,9 +78,9 @@ int h3c_AES_MD5_decryption(unsigned char *decrypt_data, unsigned char *encrypt_d
 
 
 // 查找表函数，根据索引值、偏移量以及长度查找序列
-char* get_sig(unsigned long index, int offset, int length, unsigned char* dst)
+char* get_sig(uint32_t index, int offset, int length, unsigned char* dst)
 {
-	const unsigned char *base_address;
+	const unsigned char *base_address;	
 	switch (index)
 	{
 	case 0xa31acc57:base_address = x57cc1aa3; break;
@@ -118,7 +120,7 @@ char* get_sig(unsigned long index, int offset, int length, unsigned char* dst)
 	case 0x5d90086b:base_address = x6b08905d; break;
 	case 0xf4a21c72:base_address = x721ca2f4; break;
 	default:
-		return 0; break;
+		printf("lookup dict failed.\n");return 0; break;
 	}
 	memcpy(dst, base_address + offset, length);
 	return dst;
