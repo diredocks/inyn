@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include "aes.h"
 #include "h3c_dict.h"
-#include "md5.h"
 #include "h3c_AES_MD5.h"
 
 //void main()
