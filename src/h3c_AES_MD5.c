@@ -54,7 +54,7 @@ int h3c_AES_MD5_decryption(unsigned char *decrypt_data, unsigned char *encrypt_d
 	memcpy(decrypt_data, tmp0, 16);
 	length_1 = *(tmp0 + 5);
 	get_sig(*(unsigned long *)tmp0, *(tmp0 + 4), length_1, sig);
-	MD5Calc(sig, length_1, tmp2);
+	MD5(sig, length_1, tmp2);
 
 	AES128_CBC_decrypt_buffer(tmp3, tmp0+16, 16, tmp2, iv2);
 
@@ -70,8 +70,8 @@ int h3c_AES_MD5_decryption(unsigned char *decrypt_data, unsigned char *encrypt_d
 	{
 		memcpy(decrypt_data, sig, length_1 + length_2);
 	}
-	MD5Calc(decrypt_data, 32, decrypt_data);//获取MD5摘要数据，将结果存到前16位中
-	MD5Calc(decrypt_data, 16, decrypt_data + 16);//将前一MD5的结果再做一次MD5，存到后16位
+	MD5(decrypt_data, 32, decrypt_data);//获取MD5摘要数据，将结果存到前16位中
+	MD5(decrypt_data, 16, decrypt_data + 16);//将前一MD5的结果再做一次MD5，存到后16位
 	return 0;
 }
 
