@@ -3,11 +3,19 @@
 #include <string.h>
 #include <stdlib.h>
 #include <openssl/md5.h>
-#include <arpa/inet.h>
 #include "aes.h"
 #include "h3c_dict.h"
 #include "h3c_AES_MD5.h"
 
+/* å¤§å°ç«¯é—®é¢˜ */
+//å¤§å°ç«¯æ£€æµ‹ï¼Œå¦‚æžœ ENDIANNESS=='l' åˆ™ä¸ºå°ç«¯
+static union { char c[4]; unsigned long mylong; } endian_test = {{ 'l', '?', '?', 'b' } }; 
+#define ENDIANNESS ((char)endian_test.mylong)
+//å¤§å°ç«¯è½¬æ¢
+#define BigLittleSwap32(A) ((((uint32_t)(A)&0xff000000)>>24)|\
+	(((uint32_t)(A)&0x00ff0000)>>8)|\
+	(((uint32_t)(A)&0x0000ff00)<<8)|\
+	(((uint32_t)(A)&0x000000ff)<<24))
 //void main()
 //{
 //	test();
@@ -38,12 +46,12 @@ int test() {
 	return 0;
 }
 
-//²Î¿¼ h3c_AES_MD5.md ÎÄµµÖÐ¶ÔËã·¨µÄËµÃ÷
+//å‚è€ƒ h3c_AES_MD5.md æ–‡æ¡£ä¸­å¯¹ç®—æ³•çš„è¯´æ˜Ž
 int h3c_AES_MD5_decryption(unsigned char *decrypt_data, unsigned char *encrypt_data)
 {
 	const unsigned char key[16] = { 0xEC, 0xD4, 0x4F, 0x7B, 0xC6, 0xDD, 0x7D, 0xDE, 0x2B, 0x7B, 0x51, 0xAB, 0x4A, 0x6F, 0x5A, 0x22 };        // AES_BLOCK_SIZE = 16
 	unsigned char iv1[16] = { 'a', '@', '4', 'd', 'e', '%', '#', '1', 'a', 's', 'd', 'f', 's', 'd', '2', '4' };        // init vector
-	unsigned char iv2[16] = { 'a', '@', '4', 'd', 'e', '%', '#', '1', 'a', 's', 'd', 'f', 's', 'd', '2', '4' }; //Ã¿´Î¼ÓÃÜ¡¢½âÃÜºó£¬IV»á±»¸Ä±ä£¡Òò´ËÐèÒªÁ½×éIVÍê³ÉÁ½´Î¡°¶ÀÁ¢µÄ¡±½âÃÜ
+	unsigned char iv2[16] = { 'a', '@', '4', 'd', 'e', '%', '#', '1', 'a', 's', 'd', 'f', 's', 'd', '2', '4' }; //æ¯æ¬¡åŠ å¯†ã€è§£å¯†åŽï¼ŒIVä¼šè¢«æ”¹å˜ï¼å› æ­¤éœ€è¦ä¸¤ç»„IVå®Œæˆä¸¤æ¬¡â€œç‹¬ç«‹çš„â€è§£å¯†
 	unsigned int length_1;
 	unsigned int length_2;
 	unsigned char tmp0[32];
@@ -71,17 +79,28 @@ int h3c_AES_MD5_decryption(unsigned char *decrypt_data, unsigned char *encrypt_d
 	{
 		memcpy(decrypt_data, sig, length_1 + length_2);
 	}
-	MD5(decrypt_data, 32, decrypt_data);//»ñÈ¡MD5ÕªÒªÊý¾Ý£¬½«½á¹û´æµ½Ç°16Î»ÖÐ
-	MD5(decrypt_data, 16, decrypt_data + 16);//½«Ç°Ò»MD5µÄ½á¹ûÔÙ×öÒ»´ÎMD5£¬´æµ½ºó16Î»
+	MD5(decrypt_data, 32, decrypt_data);//èŽ·å–MD5æ‘˜è¦æ•°æ®ï¼Œå°†ç»“æžœå­˜åˆ°å‰16ä½ä¸­
+	MD5(decrypt_data, 16, decrypt_data + 16);//å°†å‰ä¸€MD5çš„ç»“æžœå†åšä¸€æ¬¡MD5ï¼Œå­˜åˆ°åŽ16ä½
 	return 0;
 }
 
 
-// ²éÕÒ±íº¯Êý£¬¸ù¾ÝË÷ÒýÖµ¡¢Æ«ÒÆÁ¿ÒÔ¼°³¤¶È²éÕÒÐòÁÐ
+// æŸ¥æ‰¾è¡¨å‡½æ•°ï¼Œæ ¹æ®ç´¢å¼•å€¼ã€åç§»é‡ä»¥åŠé•¿åº¦æŸ¥æ‰¾åºåˆ—
 char* get_sig(uint32_t index, int offset, int length, unsigned char* dst)
 {
-	const unsigned char *base_address;	
-	switch (index)
+	uint32_t index_tmp;
+	const unsigned char *base_address;
+	// printf("index = %x\n" ,index);
+	
+	if(ENDIANNESS=='l')
+	{
+		index_tmp = index; // å°ç«¯æƒ…å†µï¼Œå¦‚PCæž¶æž„
+	}
+	else
+	{
+		index_tmp = BigLittleSwap32(index); // å¤§ç«¯åºï¼Œå¦‚MIPSæž¶æž„
+	}
+	switch(index_tmp) // this line works in mips.
 	{
 	case 0xa31acc57:base_address = x57cc1aa3; break;
 	case 0xa9c5ca51:base_address = x51cac5a9; break;
