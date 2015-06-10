@@ -1,4 +1,4 @@
-njit8021xclient for C0407
+njit8021xclient for iNode C0407
 ===
 唔，这个版本也支持inode 7.0中的 h3c-AES-MD5 算法
 
