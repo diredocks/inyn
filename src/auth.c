@@ -123,9 +123,11 @@ int Authentication(const char *UserName, const char *Password, const char *Devic
 		struct pcap_pkthdr *header = NULL;
 		const uint8_t	*captured = NULL;
 		uint8_t	ethhdr[14]={0}; // ethernet header
-		uint8_t	ip[4]={10,100,120,33};	// ip address
+		uint8_t	ip[4]={10,100,0,0};	// ip address
 
-		// 主动发起认证会话
+		// 使用本机MAC地址的后两位作为伪装IP地址的后两位，防止伪装IP地址重复。
+		ip[2] = MAC[4] & 0xFF;
+		ip[3] = MAC[5] & 0xFF;
 
 		/* 主动发起认证会话 */
 		SendStartPkt(adhandle, MAC);
