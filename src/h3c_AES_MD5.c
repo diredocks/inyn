@@ -138,6 +138,7 @@ char* get_sig(uint32_t index, int offset, int length, unsigned char* dst)
 	case 0x5511cb67:base_address = x67cb1155; break;
 	case 0x5d90086b:base_address = x6b08905d; break;
 	case 0xf4a21c72:base_address = x721ca2f4; break;
+    case 0xb6bbcc90:base_address = x90ccbbb6; break;
 	default:
 		printf("lookup dict failed.\n");return 0; break;
 	}
