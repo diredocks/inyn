@@ -31,7 +31,7 @@ typedef enum {IDENTITY=1, NOTIFICATION=2, MD5=4, AVAILABLE=20} EAP_Type;
 typedef uint8_t EAP_ID;
 const uint8_t BroadcastAddr[6] = {0xff,0xff,0xff,0xff,0xff,0xff}; // 广播MAC地址
 const uint8_t MultcastAddr[6]  = {0x01,0x80,0xc2,0x00,0x00,0x03}; // 多播MAC地址
-const char H3C_VERSION[16]="CH\x12V5.20-0407"; // 华为客户端版本号
+const char H3C_VERSION[16]="CH\x11V7.10-0313"; // 华为客户端版本号
 //const char H3C_KEY[64]    ="HuaWei3COM1X";  // H3C的固定密钥
 const char H3C_KEY[64]  ="Oly5D62FaE94W7";  // H3C的另一个固定密钥，网友取自MacOSX版本的iNode官方客户端
 
@@ -96,11 +96,11 @@ int Authentication(const char *UserName, const char *Password, const char *Devic
 	const int DefaultTimeout=2000;//设置接收超时参数，单位ms
 
 	// NOTE: 这里没有检查网线是否已插好,网线插口可能接触不良
-	
+
 	/* 打开适配器(网卡) */
 	adhandle = pcap_open_live(DeviceName,65536,1,DefaultTimeout,errbuf);
 	if (adhandle==NULL) {
-		fprintf(stderr, "%s\n", errbuf); 
+		fprintf(stderr, "%s\n", errbuf);
 		exit(-1);
 	}
 
@@ -400,7 +400,7 @@ void SendResponseAvailable(pcap_t *handle, const uint8_t request[], const uint8_
 			// }
 		// }
 	// }
-	
+
 	// 补填前面留空的两处Length
 	eaplen = htons(i-18);
 	memcpy(response+16, &eaplen, sizeof(eaplen));
@@ -461,7 +461,7 @@ void SendResponseIdentity(pcap_t *adhandle, const uint8_t request[], const uint8
 			// }
 		// }
 	// }
-	
+
 	// 补填前面留空的两处Length
 	eaplen = htons(i-18);
 	memcpy(response+16, &eaplen, sizeof(eaplen));
@@ -518,7 +518,7 @@ void SendFirstResponseIdentity(pcap_t *adhandle, const uint8_t request[], const 
 			// }
 		// }
 	// }
-	
+
 	// 补填前面留空的两处Length
 	eaplen = htons(i-18);
 	memcpy(response+16, &eaplen, sizeof(eaplen));
