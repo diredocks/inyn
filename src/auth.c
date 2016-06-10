@@ -107,6 +107,9 @@ int Authentication(const char *UserName, const char *Password, const char *Devic
 	/* 查询本机MAC地址 */
 	GetMacFromDevice(MAC, DeviceName);
 
+    /* 生成随机数 */
+    srand((unsigned)time(NULL));
+
 	START_AUTHENTICATION:
 	{
 		/*
@@ -123,11 +126,12 @@ int Authentication(const char *UserName, const char *Password, const char *Devic
 		struct pcap_pkthdr *header = NULL;
 		const uint8_t	*captured = NULL;
 		uint8_t	ethhdr[14]={0}; // ethernet header
-		uint8_t	ip[4]={10,100,0,0};	// ip address
+		uint8_t	ip[4]={10,0,0,0};	// ip address
 
-		// 使用本机MAC地址的后两位作为伪装IP地址的后两位，防止伪装IP地址重复。
-		ip[2] = MAC[4] & 0xFF;
-		ip[3] = MAC[5] & 0xFF;
+		// 使用本机MAC地址生成伪装IP地址。
+        ip[1] = MAC[2] ^ (uint8_t)rand();
+		ip[2] = MAC[4] ^ (uint8_t)rand();
+		ip[3] = MAC[5] ^ (uint8_t)rand();
 
 		/* 主动发起认证会话 */
 		SendStartPkt(adhandle, MAC);
