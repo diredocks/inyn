@@ -11,7 +11,7 @@ int Authentication(const char *UserName, const char *Password, const char *Devic
 #include <string.h>
 #include <assert.h>
 #include <time.h>
-#include "h3c_AES_MD5.h"
+#include "h3c_AES_MD5/h3c_AES_MD5.h"
 #include <stdbool.h>
 
 #include <pcap.h>

@@ -23,8 +23,8 @@ add_executable(client
     md5-buildin/md5_one.c 
     md5-buildin/md5_dgst.c 
     md5-buildin/mem_clr.c 
-    aes.c 
-    h3c_AES_MD5.c
+    h3c_AES_MD5/aes.c 
+    h3c_AES_MD5/h3c_AES_MD5.c
 )
 
 # Include directories
