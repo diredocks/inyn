@@ -19,7 +19,7 @@ add_executable(client
     auth.c 
     ip.c 
     fillmd5-libcrypto.c 
-    njit8021xclient.c 
+    #njit8021xclient.c 
     md5-buildin/md5_one.c 
     md5-buildin/md5_dgst.c 
     md5-buildin/mem_clr.c 
@@ -51,5 +51,5 @@ target_link_libraries(client PRIVATE
 )
 
 # Configure a header file to pass some of the CMake settings
-configure_file(config.h.in config.h)
+#configure_file(config.h.in config.h)
 target_include_directories(client PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
