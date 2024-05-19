@@ -13,7 +13,7 @@ cmake ../src
 cmake --build .
 ```
 
-产物为 `build/client`
+产物为 `build/inyn`
 
 ## 待办
 

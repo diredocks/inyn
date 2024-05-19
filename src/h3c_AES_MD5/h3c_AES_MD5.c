@@ -2,7 +2,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <assert.h>
 #include <openssl/md5.h>
+#include <openssl/evp.h>
 
 #include "aes.h"
 #include "h3c_dict.h"
@@ -47,6 +49,8 @@ int test() {
 	return 0;
 }
 
+void CalculateMD5(const uint8_t *input, size_t length, uint8_t output[16]);
+
 //参考 h3c_AES_MD5.md 文档中对算法的说明
 int h3c_AES_MD5_decryption(unsigned char *decrypt_data, unsigned char *encrypt_data)
 {
@@ -64,7 +68,7 @@ int h3c_AES_MD5_decryption(unsigned char *decrypt_data, unsigned char *encrypt_d
 	memcpy(decrypt_data, tmp0, 16);
 	length_1 = *(tmp0 + 5);
 	get_sig(*(uint32_t *)tmp0, *(tmp0 + 4), length_1, sig);
-	MD5(sig, length_1, tmp2);
+	CalculateMD5(sig, length_1, tmp2);
 
 	AES128_CBC_decrypt_buffer(tmp3, tmp0+16, 16, tmp2, iv2);
 
@@ -80,8 +84,8 @@ int h3c_AES_MD5_decryption(unsigned char *decrypt_data, unsigned char *encrypt_d
 	{
 		memcpy(decrypt_data, sig, length_1 + length_2);
 	}
-	MD5(decrypt_data, 32, decrypt_data);//获取MD5摘要数据，将结果存到前16位中
-	MD5(decrypt_data, 16, decrypt_data + 16);//将前一MD5的结果再做一次MD5，存到后16位
+	CalculateMD5(decrypt_data, 32, decrypt_data);//获取MD5摘要数据，将结果存到前16位中
+	CalculateMD5(decrypt_data, 16, decrypt_data + 16);//将前一MD5的结果再做一次MD5，存到后16位
 	return 0;
 }
 
@@ -103,49 +107,49 @@ char* get_sig(uint32_t index, int offset, int length, unsigned char* dst)
 	}
 	switch (index_tmp) // this line works in mips.
 	{
-	case 0x15D0EADF:base_address = x15D0EADF; break;
-	case 0x09F40DE7:base_address = x09F40DE7; break;
-	case 0x189DF2CE:base_address = x189DF2CE; break;
-	case 0x1A8AED5C:base_address = x1A8AED5C; break;
-	case 0x2F40F9D8:base_address = x2F40F9D8; break;
-	case 0x45941B98:base_address = x45941B98; break;
-	case 0x359F23C3:base_address = x359F23C3; break;
-	case 0x4167F618:base_address = x4167F618; break;
-	case 0x4BEE2975:base_address = x4BEE2975; break;
-	case 0x57F612DD:base_address = x57F612DD; break;
-	case 0x36D426DD:base_address = x36D426DD; break;
-	case 0x5E51B55F:base_address = x5E51B55F; break;
-	case 0xF245C41D:base_address = xF245C41D; break;
-	case 0x545CEFE0:base_address = x545CEFE0; break;
-	case 0x5E08D0E0:base_address = x5E08D0E0; break;
-	case 0x5E877108:base_address = x5E877108; break;
-	case 0x7130F3A5:base_address = x7130F3A5; break;
-	case 0x6DD9572F:base_address = x6DD9572F; break;
-	case 0x67195BB6:base_address = x67195BB6; break;
-	case 0x70886376:base_address = x70886376; break;
-	case 0x7137CD3A:base_address = x7137CD3A; break;
-	case 0xEF432FB9:base_address = xEF432FB9; break;
-	case 0xED4B7E03:base_address = xED4B7E03; break;
-	case 0xF1C07C91:base_address = xF1C07C91; break;
-	case 0xE45C3124:base_address = xE45C3124; break;
-	case 0xDAB58841:base_address = xDAB58841; break;
-	case 0xDA58A32E:base_address = xDA58A32E; break;
-	case 0xDF977247:base_address = xDF977247; break;
-	case 0xEAE0E002:base_address = xEAE0E002; break;
-	case 0xC3A46827:base_address = xC3A46827; break;
-	case 0xB0F2918A:base_address = xB0F2918A; break;
-	case 0xAF4ED407:base_address = xAF4ED407; break;
-	case 0xBB9EC2E1:base_address = xBB9EC2E1; break;
-	case 0xA8902F8B:base_address = xA8902F8B; break;
-	case 0xA3747988:base_address = xA3747988; break;
-	case 0x84E4BC95:base_address = x84E4BC95; break;
-	case 0x763F4D5B:base_address = x763F4D5B; break;
-	case 0x9F6C10A6:base_address = x9F6C10A6; break;
-	case 0xA9407E26:base_address = xA9407E26; break;
-	case 0xCCF59F07:base_address = xCCF59F07; break;
+	case 0x0BE169DA:base_address = x0BE169DA; break;
+	case 0x077AED1F:base_address = x077AED1F; break;
+	case 0x1A5776C9:base_address = x1A5776C9; break;
+	case 0x22E05E21:base_address = x22E05E21; break;
+	case 0x22D5BBE5:base_address = x22D5BBE5; break;
+	case 0x2C58D42D:base_address = x2C58D42D; break;
+	case 0x36F158CE:base_address = x36F158CE; break;
+	case 0x3367942B:base_address = x3367942B; break;
+	case 0x31A46D27:base_address = x31A46D27; break;
+	case 0x354E4205:base_address = x354E4205; break;
+	case 0x3F131A4E:base_address = x3F131A4E; break;
+	case 0x65C64E05:base_address = x65C64E05; break;
+	case 0x63355D54:base_address = x63355D54; break;
+	case 0x5BC95547:base_address = x5BC95547; break;
+	case 0x6555D892:base_address = x6555D892; break;
+	case 0x55AB5F34:base_address = x55AB5F34; break;
+	case 0x44F73BB5:base_address = x44F73BB5; break;
+	case 0x414E793A:base_address = x414E793A; break;
+	case 0x4C37ADF3:base_address = x4C37ADF3; break;
+	case 0x58DD8873:base_address = x58DD8873; break;
+	case 0x6FB7795F:base_address = x6FB7795F; break;
+	case 0x7EABA88E:base_address = x7EABA88E; break;
+	case 0x76F63D02:base_address = x76F63D02; break;
+	case 0x72B2F727:base_address = x72B2F727; break;
+	case 0x7243D3A3:base_address = x7243D3A3; break;
+	case 0x72D78AB9:base_address = x72D78AB9; break;
+	case 0x7EF5ADA7:base_address = x7EF5ADA7; break;
+	case 0xAC40ED9D:base_address = xAC40ED9D; break;
+	case 0xAC2DCCD3:base_address = xAC2DCCD3; break;
+	case 0x8F52F955:base_address = x8F52F955; break;
+	case 0x7F9773C0:base_address = x7F9773C0; break;
+	case 0xA97617A6:base_address = xA97617A6; break;
+	case 0xF435CA94:base_address = xF435CA94; break;
+	case 0xAC12139E:base_address = xAC12139E; break;
+	case 0xB7A23044:base_address = xB7A23044; break;
+	case 0xF94BD0C3:base_address = xF94BD0C3; break;
+	case 0xDBDB6398:base_address = xDBDB6398; break;
+	case 0xC6AD7541:base_address = xC6AD7541; break;
+	case 0xC0F90B5C:base_address = xC0F90B5C; break;
+	case 0xE813C036:base_address = xE813C036; break;
 	default:
 		printf("lookup dict failed.\n"); // 查表失败
-		base_address = xCCF59F07;
+		base_address = xE813C036;
 		break;
 	}
 	memcpy(dst, base_address + offset, length);

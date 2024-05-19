@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
 			convert(Version, argv[4]);
 			Key = argv[5];
 		} else {
-			Version = "CH\x11V7.10-0313";
+			Version = "CH\x11V7.30-0601";
 			Key = "Oly5D62FaE94W7";
 		}
 	}
@@ -72,8 +72,33 @@ int main(int argc, char *argv[])
 	return (0);
 }
 
+// 处理并转换输入字符串中的十六进制转义序列
+void convert(char *dest, const char *src) {
+    int srcIndex = 0, destIndex = 0;
+    int srcLength = strlen(src);
 
-void convert(char *dest, char const *src)
+    while (srcIndex < srcLength) {
+        // 检查是否有十六进制转义序列
+        if (src[srcIndex] == '\\' && srcIndex + 3 < srcLength && src[srcIndex + 1] == 'x') {
+            // 提取十六进制转义序列
+            char hexSequence[3];
+            hexSequence[0] = src[srcIndex + 2];
+            hexSequence[1] = src[srcIndex + 3];
+            hexSequence[2] = '\0';
+
+            // 将十六进制转义序列转换为字符并复制到dest中
+            unsigned char convertedChar;
+            sscanf(hexSequence, "%hhx", &convertedChar);
+            dest[destIndex++] = convertedChar;
+            srcIndex += 4; // 跳过转义序列
+        } else {
+            // 普通字符直接复制到dest中
+            dest[destIndex++] = src[srcIndex++];
+        }
+    }
+    dest[destIndex] = '\0'; // 添加字符串结束符
+}
+/*void convert(char *dest, char const *src)
 {
 	int i = 0, j = 0;
 	int len = strlen(src);
@@ -92,4 +117,4 @@ void convert(char *dest, char const *src)
 		}
 	}
 	dest[j] = 0;
-}
+}*/
