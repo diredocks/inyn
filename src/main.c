@@ -51,9 +51,6 @@ int main(int argc, char *argv[])
 		if (argc > 5) {
 			Version = (char *)malloc(32 * sizeof(char));
 			convert(Version, argv[4]);
-      printf("%s\n", Version);
-      printf("%d\n", strcmp(Version, "CH\x11V7.30-0601"));
-      exit(1);
 			Key = argv[5];
 		} else {
 			Version = "CH\x11V7.30-0601";
