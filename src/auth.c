@@ -13,6 +13,7 @@ int Authentication(const char *UserName, const char *Password, const char *Devic
 #include <time.h>
 #include "h3c_AES_MD5/h3c_AES_MD5.h"
 #include <stdbool.h>
+#include <iconv.h>
 
 #include <pcap.h>
 
@@ -93,6 +94,45 @@ extern void FillMD5Area(uint8_t digest[],
 extern void GetIpFromDevice(uint8_t ip[4], const char DeviceName[]);
 
 int mode = 1; //auto reconnect
+
+void convert_and_print(const char* input, size_t input_len) {
+
+    // 初始化iconv
+    iconv_t cd = iconv_open("UTF-8", "GBK");
+    if (cd == (iconv_t)-1) {
+        perror("iconv_open");
+        return;
+    }
+
+    // 分配输出缓冲区
+    size_t outbuf_size = input_len * 2; // 通常UTF-8编码会比GBK长一些
+    char* outbuf = (char*)malloc(outbuf_size);
+    if (outbuf == NULL) {
+        perror("malloc");
+        iconv_close(cd);
+        return;
+    }
+
+    char* inbuf = (char*)input;
+    char* outptr = outbuf;
+    size_t inbytesleft = input_len;
+    size_t outbytesleft = outbuf_size;
+
+    // 进行编码转换
+    if (iconv(cd, &inbuf, &inbytesleft, &outptr, &outbytesleft) == (size_t)-1) {
+        perror("iconv");
+        free(outbuf);
+        iconv_close(cd);
+        return;
+    }
+
+    // 输出转换后的结果
+    fprintf(stderr ,"%s\n", outbuf);
+
+    // 清理
+    free(outbuf);
+    iconv_close(cd);
+}
 
 /**
  * 函数：Authentication()
@@ -272,10 +312,10 @@ START_AUTHENTICATION:
 			uint8_t errtype = captured[22];
 			uint8_t msgsize = captured[23];
 			const char *msg = (const char *)&captured[24];
-			DPRINTF("[%d] Server: Failure.\n", (EAP_ID)captured[19]);
+			DPRINTF("[%d] Server: Failure, Server response - ", (EAP_ID)captured[19]);
 			if (errtype == 0x09 && msgsize > 0)
-			{ // 输出错误提示消息
-				fprintf(stderr, "%s\n", msg);
+			{ // 输出错误提示消息，gbk 编码转换
+        convert_and_print(msg, strlen(msg));
 				// 已知的几种错误如下
 				// E2531:用户名不存在
 				// E2535:Service is paused
