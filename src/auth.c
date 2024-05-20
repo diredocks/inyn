@@ -327,6 +327,7 @@ START_AUTHENTICATION:
 
 				if (mode == 1)
 				{
+          SendLogoffPkt(adhandle, MAC);
 					goto START_AUTHENTICATION;
 				}
 				else
