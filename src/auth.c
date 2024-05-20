@@ -311,7 +311,7 @@ START_AUTHENTICATION: {
       const char *msg = (const char *)&captured[24];
       DPRINTF("[%d] Server: Failure, Server response - ", (EAP_ID)captured[19]);
       if (errtype == 0x09 && msgsize > 0) {  // 输出错误提示消息，gbk 编码转换
-        convert_and_print(msg, strlen(msg));
+        convert_and_print(msg, msgsize);
         // 已知的几种错误如下
         // E2531:用户名不存在
         // E2535:Service is paused
