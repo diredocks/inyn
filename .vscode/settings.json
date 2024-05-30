@@ -1,8 +1,0 @@
-{
-    "files.associations": {
-        "h3c_aes_md5.h": "c",
-        "h3c_dict.h": "c",
-        "aes.h": "c",
-        "time.h": "c"
-    }
-}
