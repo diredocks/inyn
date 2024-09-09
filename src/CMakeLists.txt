@@ -27,6 +27,9 @@ add_executable(inyn
     h3c_AES_MD5/h3c_AES_MD5.c
 )
 
+install(TARGETS inyn
+    RUNTIME DESTINATION bin)
+
 # Include directories
 target_include_directories(inyn PRIVATE 
     ${CMAKE_CURRENT_SOURCE_DIR}
